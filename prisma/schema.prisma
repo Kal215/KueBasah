@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+enum UserRole {
+  OWNER    // Pemilik - Full access
+  KITCHEN  // Dapur - Limited to input only
+}
+
+enum CriteriaType {
+  BENEFIT
+  COST
+}
+
+// ==========================================
+// USER MANAGEMENT
+// ==========================================
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(KITCHEN)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  dailyRecaps DailyRecap[]
+
+  @@map("users")
+}
+
+// ==========================================
+// MASTER DATA - PRODUCTS
+// ==========================================
+model Product {
+  id             String   @id @default(cuid())
+  name           String
+  sellingPrice   Float    @map("selling_price")    // Harga Jual
+  costPrice      Float    @map("cost_price")       // HPP (Harga Pokok Produksi)
+  shelfLifeHours Int      @map("shelf_life_hours") // Kriteria C3: Daya tahan (jam)
+  difficulty     Int      @default(3)              // Kriteria C4: Tingkat kesulitan (1-5)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  dailyRecaps  DailyRecap[]
+  smartResults SmartResult[]
+
+  @@map("products")
+}
+
+// ==========================================
+// TRANSACTION LOG - DAILY RECAP (Input Harian)
+// ==========================================
+model DailyRecap {
+  id            String   @id @default(cuid())
+  date          DateTime @db.Date
+  productId     String   @map("product_id")
+  productionQty Int      @map("production_qty")  // Produksi Pagi
+  leftoverQty   Int      @map("leftover_qty")    // Sisa Sore
+  soldQty       Int      @map("sold_qty")        // Computed: production - leftover
+  inputByUserId String   @map("input_by_user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inputBy   User    @relation(fields: [inputByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([date, productId])
+  @@map("daily_recaps")
+}
+
+// ==========================================
+// SMART CONFIGURATION - CRITERIA
+// ==========================================
+model Criteria {
+  id        String       @id @default(cuid())
+  code      String       @unique // C1, C2, C3, C4
+  name      String
+  weight    Float        // Bobot kriteria (0-1)
+  type      CriteriaType // BENEFIT or COST
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@map("criteria")
+}
+
+// ==========================================
+// SMART RESULTS HISTORY
+// ==========================================
+model SmartResult {
+  id                 String   @id @default(cuid())
+  date               DateTime @db.Date
+  productId          String   @map("product_id")
+  finalScore         Float    @map("final_score")
+  rank               Int
+  recommendationNote String   @map("recommendation_note")
+  
+  // Raw values for reference
+  marginValue        Float?   @map("margin_value")
+  avgSalesValue      Float?   @map("avg_sales_value")
+  shelfLifeValue     Float?   @map("shelf_life_value")
+  difficultyValue    Float?   @map("difficulty_value")
+  
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([date, productId])
+  @@map("smart_results")
+}

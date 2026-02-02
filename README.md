@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SPK Kue Basah - Sistem Pendukung Keputusan
 
-## Getting Started
+Sistem Pendukung Keputusan (SPK) untuk menentukan prioritas produksi kue basah menggunakan metode **SMART (Simple Multi-Attribute Rating Technique)**.
 
-First, run the development server:
+## 🎯 Fitur Utama
+
+- **Dashboard Prioritas Produksi** - Menampilkan peringkat produk berdasarkan skor SMART
+- **Manajemen Produk** - CRUD untuk data master produk kue
+- **Rekap Harian** - Input data produksi dan penjualan harian
+- **Pengaturan Kriteria** - Konfigurasi bobot kriteria SMART
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 16 (App Router, Server Actions)
+- **Database:** NeonDB (Serverless PostgreSQL)
+- **ORM:** Prisma ORM
+- **Styling:** Tailwind CSS + Shadcn UI
+- **Language:** TypeScript
+
+## 📊 Metode SMART
+
+### Kriteria Penilaian:
+| Kode | Kriteria | Tipe | Deskripsi |
+|------|----------|------|-----------|
+| C1 | Margin Keuntungan | BENEFIT | Harga Jual - HPP |
+| C2 | Rata-rata Penjualan | BENEFIT | Rata-rata penjualan 30 hari |
+| C3 | Daya Tahan | BENEFIT | Lama produk bertahan (jam) |
+| C4 | Tingkat Kesulitan | COST | Tingkat kesulitan pembuatan (1-5) |
+
+### Formula Normalisasi:
+- **BENEFIT:** (Nilai - Min) / (Max - Min)
+- **COST:** (Max - Nilai) / (Max - Min)
+
+### Rekomendasi:
+- 🟢 **Skor > 0.8:** Tingkatkan Stok
+- 🔵 **Skor 0.4 - 0.8:** Pertahankan
+- 🔴 **Skor < 0.4:** Kurangi/Hentikan
+
+## 🚀 Cara Memulai
+
+### 1. Setup Database NeonDB
+
+1. Buat akun di [NeonDB](https://console.neon.tech/)
+2. Buat project baru dan salin connection string
+3. Buat file `.env` berdasarkan `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+4. Isi `DATABASE_URL` dengan connection string dari NeonDB
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Setup Database Schema
+
+```bash
+npx prisma db push
+```
+
+### 4. Jalankan Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Struktur Folder
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── actions.ts          # Server Actions
+│   ├── page.tsx            # Dashboard
+│   ├── daily-recap/        # Halaman Rekap Harian
+│   ├── products/           # Halaman Manajemen Produk
+│   └── settings/           # Halaman Pengaturan
+├── components/
+│   ├── ui/                 # Komponen Shadcn UI
+│   └── ...                 # Komponen custom
+├── lib/
+│   ├── db.ts               # Prisma Client
+│   ├── smart-calculation.ts # Logika SMART
+│   └── utils.ts            # Utility functions
+└── prisma/
+    └── schema.prisma       # Database Schema
+```
 
-## Learn More
+## 📝 Database Schema
 
-To learn more about Next.js, take a look at the following resources:
+- **users** - Data pengguna (admin/owner)
+- **products** - Data master produk kue
+- **daily_stocks** - Log transaksi harian
+- **criteria** - Konfigurasi kriteria SMART
+- **smart_results** - Riwayat hasil perhitungan
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔧 Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Generate Prisma Client
 
-## Deploy on Vercel
+```bash
+npx prisma generate
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Push Schema ke Database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx prisma db push
+```
+
+### Buka Prisma Studio
+
+```bash
+npx prisma studio
+```
+
+## 📄 License
+
+MIT License
