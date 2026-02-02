@@ -1,8 +1,12 @@
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-// Database URL for NeonDB
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_yzWhr73RYIsw@ep-soft-violet-a13wc3hb-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=verify-full";
+// Database URL from environment variable
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is not set");
+}
 
 // Create the adapter
 const adapter = new PrismaPg({
