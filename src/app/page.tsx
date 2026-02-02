@@ -15,14 +15,4 @@ export default async function HomePage() {
     redirect("/dashboard");
   }
 }
-                atau tambahkan produk secara manual di halaman Manajemen Produk.
-              </p>
-            </div>
-          ) : (
-            <DashboardTable rankings={rankings} />
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+
