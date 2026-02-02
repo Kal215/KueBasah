@@ -7,7 +7,7 @@ const publicRoutes = ["/login"];
 // Routes only accessible by OWNER role
 const ownerOnlyRoutes = ["/dashboard", "/produk", "/kriteria"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow API routes and static files
