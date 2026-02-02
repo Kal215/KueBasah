@@ -1,5 +1,5 @@
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
 // Database URL from environment variable
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -9,7 +9,7 @@ if (!DATABASE_URL) {
 }
 
 // Create the adapter
-const adapter = new PrismaPg({
+const adapter = new PrismaNeon({
   connectionString: DATABASE_URL,
 });
 
